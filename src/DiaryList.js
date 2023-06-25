@@ -1,7 +1,7 @@
 import React from "react";
 import DiaryItem from "./DiaryItem";
 
-export default function DiaryList({ diaryList }) {
+export default function DiaryList({ diaryList, onDelete }) {
   console.log(diaryList);
   return (
     <div className="diaryList">
@@ -9,7 +9,7 @@ export default function DiaryList({ diaryList }) {
       <h4>{diaryList.length} 개의 일기가 있습니다.</h4>
       <div>
         {diaryList.map((ele) => (
-          <DiaryItem key={ele.id} {...ele} />
+          <DiaryItem key={ele.id} {...ele} onDelete={onDelete}/>
         ))}
       </div>
     </div>
