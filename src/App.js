@@ -1,38 +1,86 @@
 import "./App.css";
-import DiaryEditor from "./DiaryEditor";
-import DiaryList from "./DiaryList";
-import { useState, useRef } from "react";
+import React, { useMemo, useCallback, useReducer, useRef, useEffect } from "react";
+import Header from "./component/Header";
+import TodoEditor from "./component/TodoEditor";
+import TodoList from "./component/TodoList";
+
+function reducer(state, action) {
+  switch (action.type) {
+    case "CREATE": {
+      return [action.newItem, ...state];
+    }
+    case "UPDATE": {
+      return state.map((it) =>
+        it.id === action.targetId
+          ? {
+              ...it,
+              isDone: !it.isDone,
+            }
+          : it
+      );
+    }
+    case "DELETE": {
+      return state.filter((it) => it.id !== action.targetId);
+    }
+    default:
+      return state;
+  }
+}
+
+export const TodoStateContext = React.createContext();
+export const TodoDispatchContext = React.createContext();
 
 function App() {
-  const [data, setData] = useState([]);
-  const dateId = useRef(0);
+  const [todo, dispatch] = useReducer(reducer, [], (initial) => {
+    const storedData = localStorage.getItem("todos");
+    return storedData ? JSON.parse(storedData) : initial;
+  });
+  const idRef = useRef(3);
 
-  const onCreate = (author, content, emotion) => {
-    const created_date = new Date().getTime();
-    const newItem = {
-      author,
-      content,
-      emotion,
-      created_date,
-      id: dateId.current,
-    };
-    dateId.current++;
-    setData([newItem, ...data]);
+  useEffect(() => {
+    localStorage.setItem("todos", JSON.stringify(todo));
+  }, [todo]);
+
+  const onCreate = (content) => {
+    dispatch({
+      type: "CREATE",
+      newItem: {
+        id: idRef.current,
+        content,
+        isDone: false,
+        createdDate: new Date().getTime(),
+      },
+    });
+    idRef.current += 1;
   };
 
-  const onDelete = (targetId) => {
-    console.log(`${targetId}번 게물이 삭제되었습니다.`);
-    const newDiaryList = data.filter((ele) => (
-      ele.id !== targetId
-    ));
-    console.log(newDiaryList);
-    setData(newDiaryList);
-  }
+  const onUpdate = useCallback((targetId) => {
+    dispatch({
+      type: "UPDATE",
+      targetId,
+    });
+  }, []);
+
+  const onDelete = useCallback((targetId) => {
+    dispatch({
+      type: "DELETE",
+      targetId,
+    });
+  }, []);
+
+  const memoizedDispatches = useMemo(() => {
+    return { onCreate, onUpdate, onDelete };
+  }, []);
 
   return (
-    <div>
-      <DiaryEditor onCreate={onCreate} />
-      <DiaryList onDelete={onDelete} diaryList={data} />
+    <div className="App">
+      <Header />
+      <TodoStateContext.Provider value={todo}>
+        <TodoDispatchContext.Provider value={memoizedDispatches}>
+          <TodoEditor />
+          <TodoList />
+        </TodoDispatchContext.Provider>
+      </TodoStateContext.Provider>
     </div>
   );
 }
