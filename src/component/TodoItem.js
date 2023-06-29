@@ -5,6 +5,7 @@ import "./TodoItem.css";
 const TodoItem = ({ id, content, isDone, createdDate }) => {
   const [isTrue, setIsTrue] = useState(false);
 
+  console.log(`${id} TodoItem 업데이트`);
   const { onUpdate, onDelete } = useContext(TodoDispatchContext);
 
   const onChangeCheckbox = () => {

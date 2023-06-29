@@ -72,16 +72,24 @@ function App() {
     return { onCreate, onUpdate, onDelete };
   }, []);
 
+  const TodoList = () => {
+    return (
+      <div className="App">
+        <Header />
+        <TodoStateContext.Provider value={todo}>
+          <TodoDispatchContext.Provider value={memoizedDispatches}>
+            <TodoEditor />
+            <TodoList />
+          </TodoDispatchContext.Provider>
+        </TodoStateContext.Provider>
+      </div>
+    )
+  }
+
   return (
-    <div className="App">
-      <Header />
-      <TodoStateContext.Provider value={todo}>
-        <TodoDispatchContext.Provider value={memoizedDispatches}>
-          <TodoEditor />
-          <TodoList />
-        </TodoDispatchContext.Provider>
-      </TodoStateContext.Provider>
-    </div>
+    <>
+      <TodoList />
+    </>
   );
 }
 
